@@ -1,9 +1,6 @@
 package sample.ImageGenerating;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.awt.image.Raster;
 
 public class Chunk
 {

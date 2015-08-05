@@ -1,20 +1,25 @@
 package sample;
 
+import com.sun.glass.ui.Size;
 import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import sample.ImageGenerating.ImageChunking;
-import sample.ImageGenerating.ImageDiff;
-import sample.ImageGenerating.ScreenImageCreator;
+import javafx.scene.text.*;
+import sample.ImageGenerating.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Font;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,7 +52,7 @@ public class MainController extends Controller {
                         e.printStackTrace();
                     }
                 }
-            }, 0, 10);
+            }, 0, 50);
         }
         else
         {
@@ -56,6 +61,8 @@ public class MainController extends Controller {
     }
 
     BufferedImage _lastImage;
+    BufferedImage _toChange;
+    long lastTime = 0;
     private void takeAndSetScreenshot() throws AWTException, IOException {
         if(robot == null)
             robot = new Robot();
@@ -69,14 +76,33 @@ public class MainController extends Controller {
 
             newImage.setData(Raster.createRaster(newImage.getData().getSampleModel(), new DataBufferInt(diff1, diff1.length), new Point(0, 0)));
             _lastImage = image;
-            image = newImage;
 
-            int[][] chunks = new ImageChunking(image).getChunks();
+            Chunk[] chunks = new ImageChunking(image).getChunks();
+
+            Chunk[] filtered = new ChunkFilter(chunks, new Size(image.getWidth(), image.getHeight())).getFiltered(diff1);
+
+            for (Chunk chunk : filtered) {
+                chunk.writeToImage(_toChange);
+            }
         }
-        else
+        else{
             _lastImage = image;
+            _toChange = image;
+        }
+
+        double scale = 0.25;
+        int w = (int) (_toChange.getWidth() * scale);
+        int h = (int) (_toChange.getHeight() * scale);
+        BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        AffineTransform at = new AffineTransform();
+        at.scale(scale, scale);
+        AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
+        after = scaleOp.filter(_toChange, after);
+
         ByteOutputStream outputStream = new ByteOutputStream();
-        ImageIO.write(image, "png", outputStream);
+        ImageIO.write(after, "png", outputStream);
         imageView.setImage(new Image(outputStream.newInputStream()));
+        lastTime = System.nanoTime();
+        System.gc();
     }
 }

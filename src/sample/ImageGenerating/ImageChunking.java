@@ -18,19 +18,26 @@ public class ImageChunking
         ChunkSize = euclid(image.getHeight(), image.getWidth());
     }
 
-    public int[][] getChunks(){
+    public Chunk[] getChunks(){
         int chunks = (int) Math.ceil(data.length / (double) (ChunkSize*ChunkSize));
-        int[][] result = new int[chunks][ChunkSize*ChunkSize];
+        Chunk[] result = new Chunk[chunks];
 
         int chunksHorizontal = width / ChunkSize;
         for(int i = 0; i < chunks; i++){
-            int[] chunk = new int[ChunkSize*ChunkSize];
+            int[][] chunk = new int[ChunkSize][ChunkSize];
             for(int y = 0; y < ChunkSize; y++){
+                chunk[y] = new int[ChunkSize];
                 for(int x = 0; x < ChunkSize; x++){
-                    chunk[y * ChunkSize + x] = data[((i % chunksHorizontal) * ChunkSize) + ((int)Math.floor(i / chunksHorizontal) * width)];
+                    chunk[y][x] = data[((i % chunksHorizontal) * ChunkSize) + x + ((int)Math.floor(i / chunksHorizontal) * width * ChunkSize) + y * width];
                 }
             }
-            result[i] = chunk;
+            Chunk chkObj = new Chunk();
+            chkObj.setSize(ChunkSize);
+            chkObj.setPixels(chunk);
+            chkObj.setNumber(i);
+            chkObj.setX((i % chunksHorizontal) * ChunkSize);
+            chkObj.setY((int)Math.floor(i / chunksHorizontal) * ChunkSize);
+            result[i] = chkObj;
         }
 
         return result;

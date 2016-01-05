@@ -1,25 +1,20 @@
 package sample;
 
 import com.sun.glass.ui.Size;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.text.*;
 import sample.ImageGenerating.*;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
-import java.awt.Font;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.Raster;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -99,9 +94,10 @@ public class MainController extends Controller {
         AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BICUBIC);
         after = scaleOp.filter(_toChange, after);
 
-        ByteOutputStream outputStream = new ByteOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ImageIO.write(after, "png", outputStream);
-        imageView.setImage(new Image(outputStream.newInputStream()));
+
+        imageView.setImage(new Image(new ByteArrayInputStream(outputStream.toByteArray())));
         lastTime = System.nanoTime();
         System.gc();
     }

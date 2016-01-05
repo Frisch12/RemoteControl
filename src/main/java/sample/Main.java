@@ -18,12 +18,9 @@ public class Main extends Application {
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root, 300, 275));
         primaryStage.show();
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                Controller controller = (Controller)loader.getController();
-                controller.onShutdown();
-            }
+        primaryStage.setOnCloseRequest(event -> {
+            Controller controller = loader.getController();
+            controller.onShutdown();
         });
     }
 
